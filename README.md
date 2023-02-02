@@ -1,3 +1,13 @@
+原本打算将 LevelDB 的阅读写成博客的形式，但是要考虑的细枝末节较多，且大多需要展示源码，博客的话还是更偏重整体架构和对一些特定部分的探讨，不适合记录细节。因此想来先对源码进行一次大规模的注释，这样也方便以后直接从源码层面来回顾。
+
+能力有限，注释只表明我个人的理解，不保证正确性。
+
+----
+
+**以下是 LevelDB 原版 README**
+
+-----
+
 LevelDB is a fast key-value storage library written at Google that provides an ordered mapping from string keys to string values.
 
 > **This repository is receiving very limited maintenance. We will only review the following types of changes.**
