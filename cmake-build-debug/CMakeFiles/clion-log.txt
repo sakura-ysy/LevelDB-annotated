@@ -1,0 +1,71 @@
+"I:\CLion 2022.2.4\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=I:/CLion 2022.2.4/bin/ninja/win/ninja.exe" -G Ninja -S D:\CppProject\leveldb -B D:\CppProject\leveldb\cmake-build-debug
+-- The C compiler identification is GNU 11.2.0
+-- The CXX compiler identification is GNU 11.2.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: I:/CLion 2022.2.4/bin/mingw/bin/gcc.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: I:/CLion 2022.2.4/bin/mingw/bin/g++.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Looking for unistd.h
+-- Looking for unistd.h - found
+-- Looking for crc32c_value in crc32c
+-- Looking for crc32c_value in crc32c - not found
+-- Looking for snappy_compress in snappy
+-- Looking for snappy_compress in snappy - not found
+-- Looking for malloc in tcmalloc
+-- Looking for malloc in tcmalloc - not found
+-- Looking for fdatasync
+-- Looking for fdatasync - not found
+-- Looking for F_FULLFSYNC
+-- Looking for F_FULLFSYNC - not found
+-- Looking for O_CLOEXEC
+-- Looking for O_CLOEXEC - not found
+-- Performing Test HAVE_CLANG_THREAD_SAFETY
+-- Performing Test HAVE_CLANG_THREAD_SAFETY - Failed
+-- Performing Test LEVELDB_HAVE_NO_MISSING_FIELD_INITIALIZERS
+-- Performing Test LEVELDB_HAVE_NO_MISSING_FIELD_INITIALIZERS - Success
+-- Performing Test HAVE_CXX17_HAS_INCLUDE
+-- Performing Test HAVE_CXX17_HAS_INCLUDE - Success
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+CMake Error at CMakeLists.txt:299 (add_subdirectory):
+  The source directory
+
+    D:/CppProject/leveldb/third_party/googletest
+
+  does not contain a CMakeLists.txt file.
+
+
+CMake Error at CMakeLists.txt:303 (set_property):
+  set_property could not find TARGET gtest.  Perhaps it has not yet been
+  created.
+
+
+CMake Error at CMakeLists.txt:305 (set_property):
+  set_property could not find TARGET gmock.  Perhaps it has not yet been
+  created.
+
+
+CMake Error at CMakeLists.txt:407 (add_subdirectory):
+  The source directory
+
+    D:/CppProject/leveldb/third_party/benchmark
+
+  does not contain a CMakeLists.txt file.
+
+
+-- Looking for sqlite3_open in sqlite3
+-- Looking for sqlite3_open in sqlite3 - not found
+-- Performing Test HAVE_KYOTOCABINET
+-- Performing Test HAVE_KYOTOCABINET - Failed
+-- Configuring incomplete, errors occurred!
+See also "D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeOutput.log".
+See also "D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeError.log".
