@@ -60,15 +60,21 @@ TEST_F(FilterBlockTest, SingleChunk) {
   builder.AddKey("box");
   builder.StartBlock(300);
   builder.AddKey("hello");
-  Slice block = builder.Finish();
+  // 因为是以2k为单位，所以上面的100、200、300实际都没有调用GenerateFilter()
+  // builder还是默认值
+  Slice block = builder.Finish(); // 返回的block就是整个filter block
   FilterBlockReader reader(&policy_, block);
-  ASSERT_TRUE(reader.KeyMayMatch(100, "foo"));
+  ASSERT_TRUE(reader.KeyMayMatch(100, "foo"));  // 是 True 则放行
   ASSERT_TRUE(reader.KeyMayMatch(100, "bar"));
   ASSERT_TRUE(reader.KeyMayMatch(100, "box"));
   ASSERT_TRUE(reader.KeyMayMatch(100, "hello"));
   ASSERT_TRUE(reader.KeyMayMatch(100, "foo"));
   ASSERT_TRUE(!reader.KeyMayMatch(100, "missing"));
   ASSERT_TRUE(!reader.KeyMayMatch(100, "other"));
+
+  // 综上
+  // 该测试一种只生成了一个 filter，是在 Finish中生成的，
+  // 该filter包含了上面Add的所有key。
 }
 
 TEST_F(FilterBlockTest, MultiChunk) {
@@ -77,7 +83,7 @@ TEST_F(FilterBlockTest, MultiChunk) {
   // First filter
   builder.StartBlock(0);
   builder.AddKey("foo");
-  builder.StartBlock(2000);
+  builder.StartBlock(2000); // 2000 % 2k = 0
   builder.AddKey("bar");
 
   // Second filter

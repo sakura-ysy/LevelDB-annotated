@@ -20,6 +20,21 @@ class RandomAccessFile;
 struct ReadOptions;
 class TableCache;
 
+/**
+ * SST结构：
+ * <beginning_of_file>
+ * [data block 1]
+ * [data block 2]
+ * ...
+ * [data block N]
+ * [meta block 1]  -> 又叫 filter block
+ * [meta block index]
+ * [data block index]
+ * [Footer]
+ * <end_of_file>
+*/
+
+
 // A Table is a sorted map from strings to strings.  Tables are
 // immutable and persistent.  A Table may be safely accessed from
 // multiple threads without external synchronization.
