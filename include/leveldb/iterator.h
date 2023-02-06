@@ -21,6 +21,14 @@
 
 namespace leveldb {
 
+// Block::Iter
+// MergingIterator
+// EmptyIterator
+// TwoLevelIterator
+// Version::LevelFileNumIterator
+// DBIter
+// MemTableIterator
+// 上面这些迭代器的父类都是Iterator
 class LEVELDB_EXPORT Iterator {
  public:
   Iterator();
@@ -77,12 +85,18 @@ class LEVELDB_EXPORT Iterator {
   //
   // Note that unlike all of the preceding methods, this method is
   // not abstract and therefore clients should not override it.
+  // 回调函数的声明
   using CleanupFunction = void (*)(void* arg1, void* arg2);
+
+  // 注册回调函数（指针）
   void RegisterCleanup(CleanupFunction function, void* arg1, void* arg2);
 
  private:
   // Cleanup functions are stored in a single-linked list.
   // The list's head node is inlined in the iterator.
+  // 一个CleanupNode就是一个回调函数
+  // CleanupFunction将多个回调函数组成链表
+  // 在Iter销毁的时候使用
   struct CleanupNode {
     // True if the node is not used. Only head nodes might be unused.
     bool IsEmpty() const { return function == nullptr; }
@@ -98,6 +112,7 @@ class LEVELDB_EXPORT Iterator {
     void* arg2;
     CleanupNode* next;
   };
+  // 双向链表的头指针
   CleanupNode cleanup_head_;
 };
 

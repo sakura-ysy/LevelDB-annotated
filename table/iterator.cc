@@ -11,6 +11,8 @@ Iterator::Iterator() {
   cleanup_head_.next = nullptr;
 }
 
+// 析构Iter
+// 要把链表全部释放，且每个节点的回调都要执行
 Iterator::~Iterator() {
   if (!cleanup_head_.IsEmpty()) {
     cleanup_head_.Run();
@@ -23,6 +25,7 @@ Iterator::~Iterator() {
   }
 }
 
+// 向链表中加一个节点
 void Iterator::RegisterCleanup(CleanupFunction func, void* arg1, void* arg2) {
   assert(func != nullptr);
   CleanupNode* node;
@@ -40,6 +43,10 @@ void Iterator::RegisterCleanup(CleanupFunction func, void* arg1, void* arg2) {
 
 namespace {
 
+// 有什么意义呢？=>
+// 这是用来返回的。一般生成迭代器时，都会返回一个Iterator
+// 如果Block非空，那就返回一个Block::Iter，如果Block空，那么就不应该有迭代器
+// 为了满足类型的一致性，返回一个EmptyIterator表示空迭代。
 class EmptyIterator : public Iterator {
  public:
   EmptyIterator(const Status& s) : status_(s) {}

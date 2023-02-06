@@ -1,10 +1,10 @@
 Determining if the function crc32c_value exists in the crc32c failed with the following output:
-Change Dir: D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp
+Change Dir: D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp
 
-Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_e0d32 && [1/2] Building C object CMakeFiles/cmTC_e0d32.dir/CheckFunctionExists.c.obj
-[2/2] Linking C executable cmTC_e0d32.exe
-FAILED: cmTC_e0d32.exe 
-cmd.exe /C "cd . && "I:\CLion 2022.2.4\bin\mingw\bin\gcc.exe" -DCHECK_FUNCTION_EXISTS=crc32c_value  CMakeFiles/cmTC_e0d32.dir/CheckFunctionExists.c.obj -o cmTC_e0d32.exe -Wl,--out-implib,libcmTC_e0d32.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lcrc32c  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_69d35 && [1/2] Building C object CMakeFiles/cmTC_69d35.dir/CheckFunctionExists.c.obj
+[2/2] Linking C executable cmTC_69d35.exe
+FAILED: cmTC_69d35.exe 
+cmd.exe /C "cd . && "I:\CLion 2022.2.4\bin\mingw\bin\gcc.exe" -DCHECK_FUNCTION_EXISTS=crc32c_value  CMakeFiles/cmTC_69d35.dir/CheckFunctionExists.c.obj -o cmTC_69d35.exe -Wl,--out-implib,libcmTC_69d35.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lcrc32c  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
 I:\CLion 2022.2.4\bin\mingw\bin/ld.exe: cannot find -lcrc32c
 collect2.exe: error: ld returned 1 exit status
 ninja: build stopped: subcommand failed.
@@ -12,12 +12,12 @@ ninja: build stopped: subcommand failed.
 
 
 Determining if the function snappy_compress exists in the snappy failed with the following output:
-Change Dir: D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp
+Change Dir: D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp
 
-Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_e8ca9 && [1/2] Building C object CMakeFiles/cmTC_e8ca9.dir/CheckFunctionExists.c.obj
-[2/2] Linking C executable cmTC_e8ca9.exe
-FAILED: cmTC_e8ca9.exe 
-cmd.exe /C "cd . && "I:\CLion 2022.2.4\bin\mingw\bin\gcc.exe" -DCHECK_FUNCTION_EXISTS=snappy_compress  CMakeFiles/cmTC_e8ca9.dir/CheckFunctionExists.c.obj -o cmTC_e8ca9.exe -Wl,--out-implib,libcmTC_e8ca9.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lsnappy  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_3541d && [1/2] Building C object CMakeFiles/cmTC_3541d.dir/CheckFunctionExists.c.obj
+[2/2] Linking C executable cmTC_3541d.exe
+FAILED: cmTC_3541d.exe 
+cmd.exe /C "cd . && "I:\CLion 2022.2.4\bin\mingw\bin\gcc.exe" -DCHECK_FUNCTION_EXISTS=snappy_compress  CMakeFiles/cmTC_3541d.dir/CheckFunctionExists.c.obj -o cmTC_3541d.exe -Wl,--out-implib,libcmTC_3541d.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lsnappy  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
 I:\CLion 2022.2.4\bin\mingw\bin/ld.exe: cannot find -lsnappy
 collect2.exe: error: ld returned 1 exit status
 ninja: build stopped: subcommand failed.
@@ -25,9 +25,9 @@ ninja: build stopped: subcommand failed.
 
 
 Determining if the function malloc exists in the tcmalloc failed with the following output:
-Change Dir: D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp
+Change Dir: D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp
 
-Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_4ef2a && [1/2] Building C object CMakeFiles/cmTC_4ef2a.dir/CheckFunctionExists.c.obj
+Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_82c9c && [1/2] Building C object CMakeFiles/cmTC_82c9c.dir/CheckFunctionExists.c.obj
 <command-line>: warning: conflicting types for built-in function 'malloc'; expected 'void *(long long unsigned int)' [-Wbuiltin-declaration-mismatch]
 I:/CLion 2022.2.4/bin/cmake/win/share/cmake-3.23/Modules/CheckFunctionExists.c:7:3: note: in expansion of macro 'CHECK_FUNCTION_EXISTS'
     7 |   CHECK_FUNCTION_EXISTS(void);
@@ -35,9 +35,9 @@ I:/CLion 2022.2.4/bin/cmake/win/share/cmake-3.23/Modules/CheckFunctionExists.c:7
 I:/CLion 2022.2.4/bin/cmake/win/share/cmake-3.23/Modules/CheckFunctionExists.c:1:1: note: 'malloc' is declared in header '<stdlib.h>'
   +++ |+#include <stdlib.h>
     1 | #ifdef CHECK_FUNCTION_EXISTS
-[2/2] Linking C executable cmTC_4ef2a.exe
-FAILED: cmTC_4ef2a.exe 
-cmd.exe /C "cd . && "I:\CLion 2022.2.4\bin\mingw\bin\gcc.exe" -DCHECK_FUNCTION_EXISTS=malloc  CMakeFiles/cmTC_4ef2a.dir/CheckFunctionExists.c.obj -o cmTC_4ef2a.exe -Wl,--out-implib,libcmTC_4ef2a.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -ltcmalloc  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+[2/2] Linking C executable cmTC_82c9c.exe
+FAILED: cmTC_82c9c.exe 
+cmd.exe /C "cd . && "I:\CLion 2022.2.4\bin\mingw\bin\gcc.exe" -DCHECK_FUNCTION_EXISTS=malloc  CMakeFiles/cmTC_82c9c.dir/CheckFunctionExists.c.obj -o cmTC_82c9c.exe -Wl,--out-implib,libcmTC_82c9c.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -ltcmalloc  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
 I:\CLion 2022.2.4\bin\mingw\bin/ld.exe: cannot find -ltcmalloc
 collect2.exe: error: ld returned 1 exit status
 ninja: build stopped: subcommand failed.
@@ -45,19 +45,19 @@ ninja: build stopped: subcommand failed.
 
 
 Determining if the fdatasync exist failed with the following output:
-Change Dir: D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp
+Change Dir: D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp
 
-Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_7a5bd && [1/2] Building CXX object CMakeFiles/cmTC_7a5bd.dir/CheckSymbolExists.cxx.obj
-FAILED: CMakeFiles/cmTC_7a5bd.dir/CheckSymbolExists.cxx.obj 
-"I:\CLion 2022.2.4\bin\mingw\bin\g++.exe"   -std=c++11 -o CMakeFiles/cmTC_7a5bd.dir/CheckSymbolExists.cxx.obj -c D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
-D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx: In function 'int main(int, char**)':
-D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:8:19: error: 'fdatasync' was not declared in this scope
+Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_363d2 && [1/2] Building CXX object CMakeFiles/cmTC_363d2.dir/CheckSymbolExists.cxx.obj
+FAILED: CMakeFiles/cmTC_363d2.dir/CheckSymbolExists.cxx.obj 
+"I:\CLion 2022.2.4\bin\mingw\bin\g++.exe"   -std=c++11 -o CMakeFiles/cmTC_363d2.dir/CheckSymbolExists.cxx.obj -c D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
+D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx: In function 'int main(int, char**)':
+D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:8:19: error: 'fdatasync' was not declared in this scope
     8 |   return ((int*)(&fdatasync))[argc];
       |                   ^~~~~~~~~
 ninja: build stopped: subcommand failed.
 
 
-File D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
+File D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
 /* */
 #include <unistd.h>
 
@@ -72,19 +72,19 @@ int main(int argc, char** argv)
 #endif
 }
 Determining if the F_FULLFSYNC exist failed with the following output:
-Change Dir: D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp
+Change Dir: D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp
 
-Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_249f7 && [1/2] Building CXX object CMakeFiles/cmTC_249f7.dir/CheckSymbolExists.cxx.obj
-FAILED: CMakeFiles/cmTC_249f7.dir/CheckSymbolExists.cxx.obj 
-"I:\CLion 2022.2.4\bin\mingw\bin\g++.exe"   -std=c++11 -o CMakeFiles/cmTC_249f7.dir/CheckSymbolExists.cxx.obj -c D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
-D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx: In function 'int main(int, char**)':
-D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:8:19: error: 'F_FULLFSYNC' was not declared in this scope
+Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_91ad9 && [1/2] Building CXX object CMakeFiles/cmTC_91ad9.dir/CheckSymbolExists.cxx.obj
+FAILED: CMakeFiles/cmTC_91ad9.dir/CheckSymbolExists.cxx.obj 
+"I:\CLion 2022.2.4\bin\mingw\bin\g++.exe"   -std=c++11 -o CMakeFiles/cmTC_91ad9.dir/CheckSymbolExists.cxx.obj -c D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
+D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx: In function 'int main(int, char**)':
+D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:8:19: error: 'F_FULLFSYNC' was not declared in this scope
     8 |   return ((int*)(&F_FULLFSYNC))[argc];
       |                   ^~~~~~~~~~~
 ninja: build stopped: subcommand failed.
 
 
-File D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
+File D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
 /* */
 #include <fcntl.h>
 
@@ -99,19 +99,19 @@ int main(int argc, char** argv)
 #endif
 }
 Determining if the O_CLOEXEC exist failed with the following output:
-Change Dir: D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp
+Change Dir: D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp
 
-Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_10286 && [1/2] Building CXX object CMakeFiles/cmTC_10286.dir/CheckSymbolExists.cxx.obj
-FAILED: CMakeFiles/cmTC_10286.dir/CheckSymbolExists.cxx.obj 
-"I:\CLion 2022.2.4\bin\mingw\bin\g++.exe"   -std=c++11 -o CMakeFiles/cmTC_10286.dir/CheckSymbolExists.cxx.obj -c D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
-D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx: In function 'int main(int, char**)':
-D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:8:19: error: 'O_CLOEXEC' was not declared in this scope
+Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_f1f44 && [1/2] Building CXX object CMakeFiles/cmTC_f1f44.dir/CheckSymbolExists.cxx.obj
+FAILED: CMakeFiles/cmTC_f1f44.dir/CheckSymbolExists.cxx.obj 
+"I:\CLion 2022.2.4\bin\mingw\bin\g++.exe"   -std=c++11 -o CMakeFiles/cmTC_f1f44.dir/CheckSymbolExists.cxx.obj -c D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
+D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx: In function 'int main(int, char**)':
+D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:8:19: error: 'O_CLOEXEC' was not declared in this scope
     8 |   return ((int*)(&O_CLOEXEC))[argc];
       |                   ^~~~~~~~~
 ninja: build stopped: subcommand failed.
 
 
-File D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
+File D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
 /* */
 #include <fcntl.h>
 
@@ -126,11 +126,11 @@ int main(int argc, char** argv)
 #endif
 }
 Performing C++ SOURCE FILE Test HAVE_CLANG_THREAD_SAFETY failed with the following output:
-Change Dir: D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp
+Change Dir: D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp
 
-Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_d10ee && [1/2] Building CXX object CMakeFiles/cmTC_d10ee.dir/src.cxx.obj
-FAILED: CMakeFiles/cmTC_d10ee.dir/src.cxx.obj 
-"I:\CLion 2022.2.4\bin\mingw\bin\g++.exe" -DHAVE_CLANG_THREAD_SAFETY  -fno-exceptions -fno-rtti    -Wthread-safety -std=c++11 -o CMakeFiles/cmTC_d10ee.dir/src.cxx.obj -c D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_83a3c && [1/2] Building CXX object CMakeFiles/cmTC_83a3c.dir/src.cxx.obj
+FAILED: CMakeFiles/cmTC_83a3c.dir/src.cxx.obj 
+"I:\CLion 2022.2.4\bin\mingw\bin\g++.exe" -DHAVE_CLANG_THREAD_SAFETY  -fno-exceptions -fno-rtti    -Wthread-safety -std=c++11 -o CMakeFiles/cmTC_83a3c.dir/src.cxx.obj -c D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
 g++.exe: error: unrecognized command-line option '-Wthread-safety'
 ninja: build stopped: subcommand failed.
 
@@ -138,12 +138,12 @@ ninja: build stopped: subcommand failed.
 Source file was:
 int main() { return 0; }
 Determining if the function sqlite3_open exists in the sqlite3 failed with the following output:
-Change Dir: D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp
+Change Dir: D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp
 
-Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_a594e && [1/2] Building C object CMakeFiles/cmTC_a594e.dir/CheckFunctionExists.c.obj
-[2/2] Linking C executable cmTC_a594e.exe
-FAILED: cmTC_a594e.exe 
-cmd.exe /C "cd . && "I:\CLion 2022.2.4\bin\mingw\bin\gcc.exe" -Wstrict-prototypes -DCHECK_FUNCTION_EXISTS=sqlite3_open  CMakeFiles/cmTC_a594e.dir/CheckFunctionExists.c.obj -o cmTC_a594e.exe -Wl,--out-implib,libcmTC_a594e.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lsqlite3  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_c9fc2 && [1/2] Building C object CMakeFiles/cmTC_c9fc2.dir/CheckFunctionExists.c.obj
+[2/2] Linking C executable cmTC_c9fc2.exe
+FAILED: cmTC_c9fc2.exe 
+cmd.exe /C "cd . && "I:\CLion 2022.2.4\bin\mingw\bin\gcc.exe" -Wstrict-prototypes -DCHECK_FUNCTION_EXISTS=sqlite3_open  CMakeFiles/cmTC_c9fc2.dir/CheckFunctionExists.c.obj -o cmTC_c9fc2.exe -Wl,--out-implib,libcmTC_c9fc2.dll.a -Wl,--major-image-version,0,--minor-image-version,0  -lsqlite3  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
 I:\CLion 2022.2.4\bin\mingw\bin/ld.exe: cannot find -lsqlite3
 collect2.exe: error: ld returned 1 exit status
 ninja: build stopped: subcommand failed.
@@ -151,12 +151,12 @@ ninja: build stopped: subcommand failed.
 
 
 Performing C++ SOURCE FILE Test HAVE_KYOTOCABINET failed with the following output:
-Change Dir: D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp
+Change Dir: D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp
 
-Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_e9cf9 && [1/2] Building CXX object CMakeFiles/cmTC_e9cf9.dir/src.cxx.obj
-FAILED: CMakeFiles/cmTC_e9cf9.dir/src.cxx.obj 
-"I:\CLion 2022.2.4\bin\mingw\bin\g++.exe" -DHAVE_KYOTOCABINET  -fno-exceptions -fno-rtti  -std=c++11 -o CMakeFiles/cmTC_e9cf9.dir/src.cxx.obj -c D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
-D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx:2:10: fatal error: kcpolydb.h: No such file or directory
+Run Build Command(s):I:/CLion 2022.2.4/bin/ninja/win/ninja.exe cmTC_379e3 && [1/2] Building CXX object CMakeFiles/cmTC_379e3.dir/src.cxx.obj
+FAILED: CMakeFiles/cmTC_379e3.dir/src.cxx.obj 
+"I:\CLion 2022.2.4\bin\mingw\bin\g++.exe" -DHAVE_KYOTOCABINET  -fno-exceptions -fno-rtti  -std=c++11 -o CMakeFiles/cmTC_379e3.dir/src.cxx.obj -c D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx:2:10: fatal error: kcpolydb.h: No such file or directory
     2 | #include <kcpolydb.h>
       |          ^~~~~~~~~~~~
 compilation terminated.

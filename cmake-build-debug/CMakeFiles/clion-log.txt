@@ -1,4 +1,4 @@
-"I:\CLion 2022.2.4\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=I:/CLion 2022.2.4/bin/ninja/win/ninja.exe" -G Ninja -S D:\CppProject\leveldb -B D:\CppProject\leveldb\cmake-build-debug
+"I:\CLion 2022.2.4\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=I:/CLion 2022.2.4/bin/ninja/win/ninja.exe" -G Ninja -S D:\CppProject\LevelDB-annotated -B D:\CppProject\LevelDB-annotated\cmake-build-debug
 -- The C compiler identification is GNU 11.2.0
 -- The CXX compiler identification is GNU 11.2.0
 -- Detecting C compiler ABI info
@@ -39,7 +39,7 @@
 CMake Error at CMakeLists.txt:299 (add_subdirectory):
   The source directory
 
-    D:/CppProject/leveldb/third_party/googletest
+    D:/CppProject/LevelDB-annotated/third_party/googletest
 
   does not contain a CMakeLists.txt file.
 
@@ -57,7 +57,7 @@ CMake Error at CMakeLists.txt:305 (set_property):
 CMake Error at CMakeLists.txt:407 (add_subdirectory):
   The source directory
 
-    D:/CppProject/leveldb/third_party/benchmark
+    D:/CppProject/LevelDB-annotated/third_party/benchmark
 
   does not contain a CMakeLists.txt file.
 
@@ -67,5 +67,5 @@ CMake Error at CMakeLists.txt:407 (add_subdirectory):
 -- Performing Test HAVE_KYOTOCABINET
 -- Performing Test HAVE_KYOTOCABINET - Failed
 -- Configuring incomplete, errors occurred!
-See also "D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeOutput.log".
-See also "D:/CppProject/leveldb/cmake-build-debug/CMakeFiles/CMakeError.log".
+See also "D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeOutput.log".
+See also "D:/CppProject/LevelDB-annotated/cmake-build-debug/CMakeFiles/CMakeError.log".
