@@ -63,6 +63,7 @@ class Block {
   // record格式 ->
   // record i   : | key共享长度 | key非共享长度 | value长度 | key非共享内容 | value内容 |
   // record i+1 : | key共享长度 | key非共享长度 | value长度 | key非共享内容 | value内容 |
+  // 其中`共享`是指和前一个key共享的内容
   const char* data_;
   // 数据区data_的大小
   size_t size_;

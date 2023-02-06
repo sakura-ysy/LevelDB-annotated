@@ -67,19 +67,27 @@ Status Footer::DecodeFrom(Slice* input) {
 Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
                  const BlockHandle& handle, BlockContents* result) {
   result->data = Slice();
-  result->cachable = false;
-  result->heap_allocated = false;
+  result->cachable = false; // 默认不cache
+  result->heap_allocated = false; // 是否需要自己去释放内存
 
   // Read the block contents as well as the type/crc footer.
   // See table_builder.cc for the code that built this structure.
   size_t n = static_cast<size_t>(handle.size());
+
+  // 总的内存区域
+  // 注意，new了，说明要手动释放
   char* buf = new char[n + kBlockTrailerSize];
   Slice contents;
+
+  // 读出来，放入contents中
   Status s = file->Read(handle.offset(), n + kBlockTrailerSize, &contents, buf);
   if (!s.ok()) {
     delete[] buf;
     return s;
   }
+
+  // 如果读出来的结果与预期大小不一致
+  // 就说明读错了，释放buf之后返回
   if (contents.size() != n + kBlockTrailerSize) {
     delete[] buf;
     return Status::Corruption("truncated block read");
@@ -87,6 +95,8 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
 
   // Check the crc of the type and the block contents
   const char* data = contents.data();  // Pointer to where Read put the data
+  
+  // crc校验
   if (options.verify_checksums) {
     const uint32_t crc = crc32c::Unmask(DecodeFixed32(data + n + 1));
     const uint32_t actual = crc32c::Value(data, n + 1);
@@ -97,17 +107,25 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
     }
   }
 
+  // 看下数据是否压缩了，如果是，那么需要解压缩
+  // 注意这里的压缩是Compression，不是合并的那个Compact
+  // 压缩用的Snappy库
   switch (data[n]) {
     case kNoCompression:
       if (data != buf) {
         // File implementation gave us pointer to some other data.
         // Use it directly under the assumption that it will be live
         // while the file is open.
+        // 如果contents里面是自带内存的
+        // 那么就没有必要使用这个函数内部申请的buf
+        // 所以把buf清空掉
         delete[] buf;
         result->data = Slice(data, n);
         result->heap_allocated = false;
         result->cachable = false;  // Do not double-cache
       } else {
+        // 如果contents里面使用了新生成的buf
+        // 那么就需要自己去释放内存
         result->data = Slice(buf, n);
         result->heap_allocated = true;
         result->cachable = true;

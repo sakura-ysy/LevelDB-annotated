@@ -326,6 +326,8 @@ class Block::Iter : public Iterator {
       CorruptionError();
       return false;
     } else {
+      // 因为是Iter，所以这里的key_在更改前肯定是上一个record的key
+      // 那么key_.resize(shared)就可以直接取出共享内容
       key_.resize(shared);
       key_.append(p, non_shared);
       value_ = Slice(p + non_shared, value_length);

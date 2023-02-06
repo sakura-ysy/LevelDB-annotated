@@ -52,6 +52,8 @@ void BlockBuilder::Reset() {
   last_key_.clear();
 }
 
+// 大小估计
+// 该函数只能在Finish()之前调用
 size_t BlockBuilder::CurrentSizeEstimate() const {
   return (buffer_.size() +                       // Raw data buffer
           restarts_.size() * sizeof(uint32_t) +  // Restart array
@@ -60,21 +62,32 @@ size_t BlockBuilder::CurrentSizeEstimate() const {
 
 Slice BlockBuilder::Finish() {
   // Append restart array
+  // restarts_数组拼接到records之后
   for (size_t i = 0; i < restarts_.size(); i++) {
     PutFixed32(&buffer_, restarts_[i]);
   }
+  // 末尾拼接上restart的个数
   PutFixed32(&buffer_, restarts_.size());
   finished_ = true;
   return Slice(buffer_);
 }
 
+
+// record格式 ->
+// record i   : | key共享长度 | key非共享长度 | value长度 | key非共享内容 | value内容 |
+// record i+1 : | key共享长度 | key非共享长度 | value长度 | key非共享内容 | value内容 |
 void BlockBuilder::Add(const Slice& key, const Slice& value) {
   Slice last_key_piece(last_key_);
   assert(!finished_);
   assert(counter_ <= options_->block_restart_interval);
   assert(buffer_.empty()  // No values yet?
          || options_->comparator->Compare(key, last_key_piece) > 0);
+
+  // 计算和前一个key的共享长度
   size_t shared = 0;
+
+  // 一个restart内部的record数量要低于block_restart_interval
+  // 否则（else）就开启一个新的restart
   if (counter_ < options_->block_restart_interval) {
     // See how much sharing to do with previous string
     const size_t min_length = std::min(last_key_piece.size(), key.size());
