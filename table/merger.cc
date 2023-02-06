@@ -11,6 +11,8 @@
 namespace leveldb {
 
 namespace {
+
+
 class MergingIterator : public Iterator {
  public:
   MergingIterator(const Comparator* comparator, Iterator** children, int n)
@@ -26,6 +28,12 @@ class MergingIterator : public Iterator {
 
   ~MergingIterator() override { delete[] children_; }
 
+
+  // 注意
+  // 初始化MergingIterator时，current_并不是指向某一个位置，而是nullptr
+  // 所以此时是invalid的
+  // 当调用SeekToFirst()/SeekToLast()/Seek()让current_指向特定位置时
+  // 才是valid
   bool Valid() const override { return (current_ != nullptr); }
 
   void SeekToFirst() override {
@@ -52,6 +60,16 @@ class MergingIterator : public Iterator {
     direction_ = kForward;
   }
 
+  /**
+   * 注意
+   * MergingIterator的遍历不是按照children元素顺序遍历的
+   * 而是按照child的key_来遍历
+   * 要么是从小key_的child遍历到大key_的child，要么反过来
+   * 实质就是：`k路链表`
+  */
+
+  // 向前遍历，由小到大
+  // 只要调用了Next()就会直接将方向改为kForward
   void Next() override {
     assert(Valid());
 
@@ -61,6 +79,8 @@ class MergingIterator : public Iterator {
     // the smallest child and key() == current_->key().  Otherwise,
     // we explicitly position the non-current_ children.
     if (direction_ != kForward) {
+      // 如果是kReverse，那么需要把除current_之外的Iter都移到比key()大位置
+      // 才能保证current_的key是最小的
       for (int i = 0; i < n_; i++) {
         IteratorWrapper* child = &children_[i];
         if (child != current_) {
@@ -74,10 +94,14 @@ class MergingIterator : public Iterator {
       direction_ = kForward;
     }
 
+    // current_内部的Next，即该Iter往大移一次
     current_->Next();
+    // 由于current_下移了，因为其可能不是最小key了，重新找一次
     FindSmallest();
   }
 
+  // 向后遍历，由大都小
+  // 只要调用了Prev()就会直接将方向改为kReverse
   void Prev() override {
     assert(Valid());
 
@@ -103,10 +127,14 @@ class MergingIterator : public Iterator {
       direction_ = kReverse;
     }
 
+    // current_内部的Prev，即该Iter往小移一次
     current_->Prev();
+    // 由于current_上移了，因为其可能不是最大key了，重新找一次
     FindLargest();
   }
 
+  // 返回current_的key
+  // 也就是最大或最小的key
   Slice key() const override {
     assert(Valid());
     return current_->key();
@@ -138,13 +166,22 @@ class MergingIterator : public Iterator {
   // We might want to use a heap in case there are lots of children.
   // For now we use a simple array since we expect a very small number
   // of children in leveldb.
+  // 比较器
   const Comparator* comparator_;
+  // 一个IteratorWrapper封装一个Iterator*
+  // 所以children相当于一个Iterator*数组
   IteratorWrapper* children_;
+  // children的长度，即Iterator个数
   int n_;
+  // 当前的Iterator
   IteratorWrapper* current_;
+  // 访问children的移动方向
+  // 因为children是一个数组，所以可以从前往后遍历，也可以从后往前遍历
   Direction direction_;
 };
 
+// children中的每一个Iterator都执行对应的key，即key_
+// 这里选出key_最小的那个Iterator
 void MergingIterator::FindSmallest() {
   IteratorWrapper* smallest = nullptr;
   for (int i = 0; i < n_; i++) {
@@ -157,6 +194,7 @@ void MergingIterator::FindSmallest() {
       }
     }
   }
+  // 把current_设置成最小的
   current_ = smallest;
 }
 
@@ -176,12 +214,14 @@ void MergingIterator::FindLargest() {
 }
 }  // namespace
 
+// children就是个Iterator*数组
 Iterator* NewMergingIterator(const Comparator* comparator, Iterator** children,
                              int n) {
   assert(n >= 0);
   if (n == 0) {
     return NewEmptyIterator();
   } else if (n == 1) {
+    // 如果只有一个，直接返回Iterator*即可，不再构建children了
     return children[0];
   } else {
     return new MergingIterator(comparator, children, n);
