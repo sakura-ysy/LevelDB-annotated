@@ -18,8 +18,8 @@ class Comparator;
 /**
  * 1.data block
  * 2.meta block
- * 3.data block index
- * 4.meta block index
+ * 3.data index block
+ * 4.meta index block
  * 上述四种结构都是基于类Block的
 */
 class Block {

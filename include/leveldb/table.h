@@ -28,8 +28,8 @@ class TableCache;
  * ...
  * [data block N]
  * [meta block 1]  -> 又叫 filter block
- * [meta block index]
- * [data block index]
+ * [meta index block]
+ * [data index block]
  * [Footer]
  * <end_of_file>
 */

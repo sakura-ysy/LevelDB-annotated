@@ -112,7 +112,7 @@ class LEVELDB_EXPORT Iterator {
     void* arg2;
     CleanupNode* next;
   };
-  // 双向链表的头指针
+  // 链表的头指针
   CleanupNode cleanup_head_;
 };
 

@@ -17,6 +17,21 @@
 
 namespace leveldb {
 
+
+/**
+ * SST结构：
+ * <beginning_of_file>
+ * [data block 1]
+ * [data block 2]
+ * ...
+ * [data block N]
+ * [meta block 1]  -> 又叫 filter block
+ * [meta index block]
+ * [data index block]
+ * [Footer]
+ * <end_of_file>
+*/
+
 struct Table::Rep {
   ~Rep() {
     delete filter;

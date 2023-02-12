@@ -45,6 +45,9 @@ class BlockHandle {
 
 // Footer encapsulates the fixed information stored at the tail
 // end of every table file.
+// sst尾部，内容很简单
+// metaindex_handle_记录meta index block的位置
+// index_handle_记录data index block的位置
 class Footer {
  public:
   // Encoded length of a Footer.  Note that the serialization of a

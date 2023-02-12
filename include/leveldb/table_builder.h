@@ -25,6 +25,10 @@ class BlockBuilder;
 class BlockHandle;
 class WritableFile;
 
+// 用来生产SST
+// 所以TableBuilder和其他xxxBuilder不一样
+// 它是要写到磁盘中的，而后者只存放于内存
+// 核心变量是一个结构Rep
 class LEVELDB_EXPORT TableBuilder {
  public:
   // Create a builder that will store the contents of the table it is
