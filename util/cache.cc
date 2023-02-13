@@ -40,17 +40,34 @@ namespace {
 
 // An entry is a variable length heap-allocated structure.  Entries
 // are kept in a circular doubly linked list ordered by access time.
+
+// cache通过循环双向链表来维持LRU
+// 每一个handle都是链表中的一个Node
+// 图示可参考：https://leveldb-handbook.readthedocs.io/zh/latest/cache.html
 struct LRUHandle {
   void* value;
   void (*deleter)(const Slice&, void* value);
+  // next_hash是用来解决冲突的
+  // 同一个hash值的node会被放在一个单链表中
+  // 这个单链表就是用next_hash链接而成
   LRUHandle* next_hash;
+  // 双向链表的前后向指针
+  // 注意，这个和上面那个hash链表无关
   LRUHandle* next;
   LRUHandle* prev;
+  // ??
   size_t charge;  // TODO(opt): Only allow uint32_t?
+  // 在cache.h中讲过
+  // cache会把要缓存的block封装成k-v的形式
+  // 这里就是key的长度
   size_t key_length;
+  // 是否在cache中
   bool in_cache;     // Whether entry is in the cache.
+  // 该handle的引用计数
   uint32_t refs;     // References, including cache reference, if present.
+  // key的hash
   uint32_t hash;     // Hash of key(); used for fast sharding and comparisons
+  // key的首址
   char key_data[1];  // Beginning of key
 
   Slice key() const {
@@ -67,25 +84,66 @@ struct LRUHandle {
 // table implementations in some of the compiler/runtime combinations
 // we have tested.  E.g., readrandom speeds up by ~5% over the g++
 // 4.4.3's builtin hashtable.
+// hash表
+// 相同hash的item会链接到同一个单向链表中
+// 所有的这些单项链表都放在hash表中
+// 一个链表被称为一个bucket
+// 图示可参考：https://leveldb-handbook.readthedocs.io/zh/latest/cache.html
 class HandleTable {
  public:
   HandleTable() : length_(0), elems_(0), list_(nullptr) { Resize(); }
+  // 这里在清空HashTable的时候，只会去删除list.
+  // 问题: refs如何处理？
+  // 答案：LRUHandle本身的内存块不由HandleTable管理
   ~HandleTable() { delete[] list_; }
 
+  // 查找时，通过key、hash去找
   LRUHandle* Lookup(const Slice& key, uint32_t hash) {
     return *FindPointer(key, hash);
   }
 
+  // 向hash表中插入entry
+  // 如果链表中已经有了这个元素，那么这个元素会被挤出链表，然后被新来的entry替换掉
+  // 考虑以下几种case：
+  // case1: bucket为空，即链表还未建立
+  // case2: bucket非空，但没有找到相同的entry
+  // case3: bucket非空，但找到了相同的entry
   LRUHandle* Insert(LRUHandle* h) {
+    // case 1. 这个时候返回的是bucket的地址，也就是&list_[i];
+    // case 2. 返回的是链表里面最后一个&(tail->next_hash)
+    // case 3. 如果能够找到相等的key/hash, 假设链表a->b->nullptr
+    //         b->hash b->key与h的相等
+    //         那么这里拿到的是&(a->next_hash)
     LRUHandle** ptr = FindPointer(h->key(), h->hash);
+    // case 1. 取得list_[i]
+    // case 2. 取得node->next_hash的值
+    // case 3. old = a->next_hash, 也就是old指向b结点
     LRUHandle* old = *ptr;
+    // case 1. 这个时候old肯定为nullptr
+    //         那么新加入的结点的next_hash_就设置为nullptr
+    // case 2. old的值也是nullptr. 相当于拿到了tail->next_hash
+    //         那么这里使h->next_hash = nullptr.
+    // case 3. 此时就不为空了, h->next_hash = old->next_hash
+    //         h->next = b->next_hash
+    //         指向相等元素的下一个结点
     h->next_hash = (old == nullptr ? nullptr : old->next_hash);
+    // case 1. list_[i] = h; 实际上就是修改了头指针
+    // case 2. 相当于是修改了tail->next_hash
+    //         tail->next_hash = h;
+    // case 3. a->next_hash = h
     *ptr = h;
+    // case 1. 如果没有找到相应的元素，那么这里新插入了一个entry/slot
+    //         elems_加加.
+    // case 2. 如果旧有的tail->next_hash值，注意新的tail->next_hash
+    //         已经指向h了
     if (old == nullptr) {
+      // 新增加了元素
       ++elems_;
       if (elems_ > length_) {
         // Since each cache entry is fairly large, we aim for a small
         // average linked list length (<= 1).
+        // 如果元素已经增长到了length_
+        // 那么就resize
         Resize();
       }
     }
@@ -103,37 +161,63 @@ class HandleTable {
   }
 
  private:
+
+  // hash表是由一系列bucket组成
+  // 每个bucket是一个链表，其中的节点的hash值是相同的
+
   // The table consists of an array of buckets where each bucket is
   // a linked list of cache entries that hash into the bucket.
+
+  // bucket的数目
   uint32_t length_;
+  // 存放的item数目
+  // 也就是所有bucket的所有node数目之和
   uint32_t elems_;
+  // list_[i]就是一个bucket
   LRUHandle** list_;
 
   // Return a pointer to slot that points to a cache entry that
   // matches key/hash.  If there is no such cache entry, return a
   // pointer to the trailing slot in the corresponding linked list.
+  // 返回LRUHandle指针的地址
   LRUHandle** FindPointer(const Slice& key, uint32_t hash) {
+    // 对hash取模，找到对应的bucket
+    // bucket是一个链表
+    // ptr就是链表头的地址
     LRUHandle** ptr = &list_[hash & (length_ - 1)];
+    // 从头遍历bucket
+    // 直到找到目标key所在的entry
     while (*ptr != nullptr && ((*ptr)->hash != hash || key != (*ptr)->key())) {
       ptr = &(*ptr)->next_hash;
     }
     return ptr;
   }
 
+  // 当插入的元素过多时，hash表会把空间扩大为原来的2倍，然后re-hash一遍
   void Resize() {
+    // 需要新申请的bucket数目
     uint32_t new_length = 4;
     while (new_length < elems_) {
+      // 成倍扩大
       new_length *= 2;
     }
+    // 新的buckets
     LRUHandle** new_list = new LRUHandle*[new_length];
     memset(new_list, 0, sizeof(new_list[0]) * new_length);
+    // count记录旧的entry数目，最终值应该等于elems_
     uint32_t count = 0;
+    // 重新hash
     for (uint32_t i = 0; i < length_; i++) {
+      // 从bucket头开始
       LRUHandle* h = list_[i];
       while (h != nullptr) {
+        // 暂存下一个节点
         LRUHandle* next = h->next_hash;
+        // 当前节点的hash
         uint32_t hash = h->hash;
+        // hash在新的buckets中重新取模
         LRUHandle** ptr = &new_list[hash & (new_length - 1)];
+        // 头插法
         h->next_hash = *ptr;
         *ptr = h;
         h = next;
@@ -141,6 +225,7 @@ class HandleTable {
       }
     }
     assert(elems_ == count);
+    // 释放旧的buckets
     delete[] list_;
     list_ = new_list;
     length_ = new_length;

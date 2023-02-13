@@ -32,7 +32,7 @@ class LEVELDB_EXPORT Cache;
 LEVELDB_EXPORT Cache* NewLRUCache(size_t capacity);
 
 
-// 为了方便内存block的管理。cache将block封装成了handle，即所有资源都封装为句柄
+// 为了方便内存block的管理。cache将block封装成了handle作为entry，即所有资源都封装为句柄
 // 可以把handle相关的操作分为三个部分：
 // 引用handle：Insert()、LookUp()
 // 从句柄解封装出资源：Value()
