@@ -165,6 +165,8 @@ static void ReleaseBlock(void* arg, void* h) {
 
 // Convert an index iterator value (i.e., an encoded BlockHandle)
 // into an iterator over the contents of the corresponding block.
+// index_value是一个block的句柄
+// 该函数通过句柄生成并返回该block的Iter
 Iterator* Table::BlockReader(void* arg, const ReadOptions& options,
                              const Slice& index_value) {
   Table* table = reinterpret_cast<Table*>(arg);
@@ -172,6 +174,7 @@ Iterator* Table::BlockReader(void* arg, const ReadOptions& options,
   Block* block = nullptr;
   Cache::Handle* cache_handle = nullptr;
 
+  // 解码出句柄
   BlockHandle handle;
   Slice input = index_value;
   Status s = handle.DecodeFrom(&input);
@@ -180,15 +183,27 @@ Iterator* Table::BlockReader(void* arg, const ReadOptions& options,
 
   if (s.ok()) {
     BlockContents contents;
+    // cache相关
+    // 生成Block的Iter，换句话说就是要读这个Block
+    // 那肯定要把它插入cache了
     if (block_cache != nullptr) {
+      // 将BlockHandle封装成key
       char cache_key_buffer[16];
       EncodeFixed64(cache_key_buffer, table->rep_->cache_id);
       EncodeFixed64(cache_key_buffer + 8, handle.offset());
       Slice key(cache_key_buffer, sizeof(cache_key_buffer));
+      // 先在cache中查是否已有这个block_key
+      // 有的话就返回其句柄
       cache_handle = block_cache->Lookup(key);
       if (cache_handle != nullptr) {
+        // 有
+        // 解封装句柄成block
         block = reinterpret_cast<Block*>(block_cache->Value(cache_handle));
       } else {
+        // 无
+        // 将该block从磁盘中读出
+        // 并在内存中生成一个相同的block
+        // 将block_key->block插入cache（Insert）
         s = ReadBlock(table->rep_->file, options, handle, &contents);
         if (s.ok()) {
           block = new Block(contents);
@@ -199,6 +214,8 @@ Iterator* Table::BlockReader(void* arg, const ReadOptions& options,
         }
       }
     } else {
+      // 不需要cache
+      // 那么仅将block从磁盘读出并在内存中生成一个相同的即可
       s = ReadBlock(table->rep_->file, options, handle, &contents);
       if (s.ok()) {
         block = new Block(contents);
@@ -206,12 +223,17 @@ Iterator* Table::BlockReader(void* arg, const ReadOptions& options,
     }
   }
 
+  // 开始生成Iter
   Iterator* iter;
   if (block != nullptr) {
     iter = block->NewIterator(table->rep_->options.comparator);
     if (cache_handle == nullptr) {
+      // 没有cache
+      // 那么析构回调时只需要释放block内存空间即可
       iter->RegisterCleanup(&DeleteBlock, block, nullptr);
     } else {
+      // 有cache
+      // 那么析构回调时需要对cache中的handle进行release
       iter->RegisterCleanup(&ReleaseBlock, block_cache, cache_handle);
     }
   } else {
