@@ -55,8 +55,8 @@ struct TableBuilder::Rep {
   BlockBuilder data_block;
   // data blockc index
   // 结构如下
-  // |  key  |  BlockHandle   |
-  // |  key  |  BlockHandle   |
+  // |  key  |  BlockHandle   |  <- item
+  // |  key  |  BlockHandle   |  <- item
   // |        offset1         |
   // |        offset2         |
   // |     number_of_items    |
@@ -64,7 +64,7 @@ struct TableBuilder::Rep {
   // |      crc32 (4byte)     | 
   // 注意，key是用来分隔两个data block的，而不是指该key位于该data block中
   // <=key，说明在该BlockHandle中
-  // >key，说明在下一个BlockHandle中
+  // >key，说明不在该BlockHandle中，那就去下一个item中判断
   // 具体可以看Add()和WriteRawBlock()相关注释
   BlockBuilder index_block;
   // 记录最后添加的key
