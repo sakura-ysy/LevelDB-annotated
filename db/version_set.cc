@@ -467,6 +467,11 @@ bool Version::OverlapInLevel(int level, const Slice* smallest_user_key,
                                smallest_user_key, largest_user_key);
 }
 
+// 从当前Version中选出存放从memtable下刷的SST的Level
+// 一般来说，是Level0
+// 但是，如果Level和该SST没有重叠，那么就直接放在Level1更好
+// 依此类推，如果没有重叠，还可以放到Level2
+// 直到出现重叠或达到kMaxMemCompactLevel（2）
 int Version::PickLevelForMemTableOutput(const Slice& smallest_user_key,
                                         const Slice& largest_user_key) {
   int level = 0;
@@ -477,9 +482,11 @@ int Version::PickLevelForMemTableOutput(const Slice& smallest_user_key,
     InternalKey limit(largest_user_key, 0, static_cast<ValueType>(0));
     std::vector<FileMetaData*> overlaps;
     while (level < config::kMaxMemCompactLevel) {
+      // 不能和level+1有重叠
       if (OverlapInLevel(level + 1, &smallest_user_key, &largest_user_key)) {
         break;
       }
+      // 可以和level+2有重叠，但重叠不能超过阈值
       if (level + 2 < config::kNumLevels) {
         // Check that file does not overlap too many grandparent bytes.
         GetOverlappingInputs(level + 2, &start, &limit, &overlaps);
@@ -1589,6 +1596,14 @@ Compaction::~Compaction() {
   }
 }
 
+// 判断本次Compaction是否不需要压缩
+// 而是仅仅将一个SST移到下一层
+// 条件如下：
+// 1.level_层的输入只有1个文件
+// 2.level_+1层没有输入
+// 3.level_和grandparent(level_+2)层的重叠度不能过高
+// 这样用来保证：当level_的SST直接移到level_+1后
+// level_+1和level_+2的重叠度不会过高
 bool Compaction::IsTrivialMove() const {
   const VersionSet* vset = input_version_->vset_;
   // Avoid a move if there is lots of overlapping grandparent data.

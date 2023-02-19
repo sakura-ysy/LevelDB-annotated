@@ -580,28 +580,41 @@ Status DBImpl::RecoverLogFile(uint64_t log_number, bool last_log,
   return status;
 }
 
+// 将im memtable（以下统称im）给Flush
+// 流程如下：
+// 1.通过BuildTable()来生成SST
+// 2.通过PickLevelForMemTableOutput()来选出存放该SST的Level
+// 3.通过edit->AddFile()将新的SST加入VersionEdit中
 Status DBImpl::WriteLevel0Table(MemTable* mem, VersionEdit* edit,
                                 Version* base) {
   mutex_.AssertHeld();
   const uint64_t start_micros = env_->NowMicros();
   FileMetaData meta;
   meta.number = versions_->NewFileNumber();
+  // 加入待生成SST列表
   pending_outputs_.insert(meta.number);
   Iterator* iter = mem->NewIterator();
   Log(options_.info_log, "Level-0 table #%llu: started",
       (unsigned long long)meta.number);
 
   Status s;
+
+  // 根据im的iter生成SST
   {
     mutex_.Unlock();
+    // 注意，BuildTable是包含落盘的
+    // SST中的一些信息（最大最小key、文件大小）等会记录在meta中
     s = BuildTable(dbname_, env_, options_, table_cache_, iter, &meta);
+    // 至此，SST已经在磁盘中了
     mutex_.Lock();
   }
 
   Log(options_.info_log, "Level-0 table #%llu: %lld bytes %s",
       (unsigned long long)meta.number, (unsigned long long)meta.file_size,
       s.ToString().c_str());
+  // 释放iter
   delete iter;
+  // 从待生成列表中删除
   pending_outputs_.erase(meta.number);
 
   // Note that if file_size is zero, the file has been deleted and
@@ -611,10 +624,37 @@ Status DBImpl::WriteLevel0Table(MemTable* mem, VersionEdit* edit,
     const Slice min_user_key = meta.smallest.user_key();
     const Slice max_user_key = meta.largest.user_key();
     if (base != nullptr) {
+      // 从当前Version中选出存放该SST的Level
+      // 一般来说是0，当然也可能不是
       level = base->PickLevelForMemTableOutput(min_user_key, max_user_key);
     }
+    // 新的SST加入new_files_中
     edit->AddFile(level, meta.number, meta.file_size, meta.smallest,
                   meta.largest);
+    /**
+     * 解答一个问题：
+     * SST落盘后是固定的，在磁盘中是没有所谓层级结构的
+     * 那么LSM-Tree是怎么记录每一层有哪些SST的呢？
+     * 首先，肯定不能仅仅靠内存来记录，因为是不持久的
+     * 那么，接下来就会想到文件指针，LSM-Tree的每一个SST会不会都是一个文件指针呢？
+     * 显然也不是，因为指针是内存中的概念，断电后就消失了，重启程序指针就会变
+     * 那到底通过什么方式记录下SST在哪一层呢？
+     * => 文件编号
+     * 因为编号是整合入文件名中的，所以该`索引`是持久化的
+     * 那么具体怎么操作呢？
+     * => VersionEdit -> Version -> Manifest
+     * 首先，在每次Compaction过后，新/旧SST的编号都会记录在VersionEdit中
+     * 之后就可以通过builder.Apply() builder.SaveTo()将Edit重放入Version了
+     * Version是什么呢？
+     * 简单的来说，就是个数据结构记录每层有哪些SST，也就是编号。
+     * 那断电后怎么恢复呢？
+     * 这就是Manifest了，因为Manifest中记录的正是VersionEdit
+     * 所以可以通过Recover()重放其中的VersionEdit以达到恢复的目的
+     * 总结一下：
+     * 层级结构实际就是Version中记录了每层有哪些文件`编号`
+     * 而编号是整合进文件名中的，是持久化的
+     * 当崩溃重启后，通过重放Manifest中的VersionEdit即可恢复了
+    */
   }
 
   CompactionStats stats;
@@ -624,15 +664,21 @@ Status DBImpl::WriteLevel0Table(MemTable* mem, VersionEdit* edit,
   return s;
 }
 
+// 把im memtable给flush到L0中
 void DBImpl::CompactMemTable() {
   mutex_.AssertHeld();
   assert(imm_ != nullptr);
 
   // Save the contents of the memtable as a new Table
+  // 新建VerionEdit对应本次Flush
   VersionEdit edit;
+  // 当前所在的Version
   Version* base = versions_->current();
+  // Version加引用
   base->Ref();
+  // 执行Flush
   Status s = WriteLevel0Table(imm_, &edit, base);
+  // Version解引用
   base->Unref();
 
   if (s.ok() && shutting_down_.load(std::memory_order_acquire)) {
@@ -656,6 +702,11 @@ void DBImpl::CompactMemTable() {
     RecordBackgroundError(s);
   }
 }
+// 了解完CompactMemTable()的实现之后
+// 解答如下问题：
+// 1.CompactMemTable()何时调用？
+// 2.由谁调用？
+// 3.单线程串行调用还是多线程并行调用？
 
 void DBImpl::CompactRange(const Slice* begin, const Slice* end) {
   int max_level_with_files = 1;

@@ -43,7 +43,7 @@ struct TableBuilder::Rep {
 
   Options options;
   Options index_block_options;
-  // SST写文件指针
+  // SST文件指针
   WritableFile* file;
   // 当前写的offset，即写到哪了
   // 注意，这个offset初始值为0，也就是说
@@ -301,6 +301,7 @@ Status TableBuilder::status() const { return rep_->status; }
 // sst构建完成，生成最终的文件
 // 前面一直在写data block
 // 这里开始把meta block、meta index block、data index block、footer写下去
+// 注意，Finish()完成后，SST也就彻底落盘了
 Status TableBuilder::Finish() {
   Rep* r = rep_;
   // 把还没有刷写的data block刷写下去
@@ -319,7 +320,7 @@ Status TableBuilder::Finish() {
 
   // Write metaindex block
   if (ok()) {
-    // 以k-v的方式构架meta index block
+    // 以k-v的方式构建meta index block
     // key是filter策略的名字
     // value是filter block的指针（BlockHandle）
     BlockBuilder meta_index_block(&r->options);

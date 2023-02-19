@@ -174,8 +174,12 @@ class DBImpl : public DB {
   port::Mutex mutex_;
   std::atomic<bool> shutting_down_;
   port::CondVar background_work_finished_signal_ GUARDED_BY(mutex_);
+  // memtable
   MemTable* mem_;
+  // im memtable
+  // 注意，不同于RocksDB，LevelDB只有一个im memtable
   MemTable* imm_ GUARDED_BY(mutex_);  // Memtable being compacted
+  // 是否已有im memtable
   std::atomic<bool> has_imm_;         // So bg thread can detect non-null imm_
   WritableFile* logfile_;
   uint64_t logfile_number_ GUARDED_BY(mutex_);
@@ -190,6 +194,7 @@ class DBImpl : public DB {
 
   // Set of table files to protect from deletion because they are
   // part of ongoing compactions.
+  // 记录正准备生成的SST文件编号
   std::set<uint64_t> pending_outputs_ GUARDED_BY(mutex_);
 
   // Has a background compaction been scheduled or is running?

@@ -283,6 +283,7 @@ class LEVELDB_EXPORT WritableFile {
 
   virtual ~WritableFile();
 
+  // Append是包括写磁盘的
   virtual Status Append(const Slice& data) = 0;
   virtual Status Close() = 0;
   virtual Status Flush() = 0;

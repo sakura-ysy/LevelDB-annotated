@@ -339,6 +339,14 @@ class VersionSet {
   std::string compact_pointer_[config::kNumLevels];
 };
 
+
+// 以下为Compaction相关 
+// Leveldb的compaction有两种：
+// 1.Minor Compaction：将immemtable下刷到SST，也就是常说的Flush
+// 2.Major Compaction: SST之间合并，也就是常说的Compaction
+// 将1统称为Flush，将2统称为Compaction
+
+// class Compaction用来记录需要操作的SST等信息
 // A Compaction encapsulates information about a compaction.
 class Compaction {
  public:
@@ -346,39 +354,55 @@ class Compaction {
 
   // Return the level that is being compacted.  Inputs from "level"
   // and "level+1" will be merged to produce a set of "level+1" files.
+  // 返回正在被压缩的level
   int level() const { return level_; }
 
   // Return the object that holds the edits to the descriptor done
   // by this compaction.
+  // 返回对应的VersionEdit
   VersionEdit* edit() { return &edit_; }
 
   // "which" must be either 0 or 1
+  // 每层输入的文件数
+  // 0表示level_，1表示level_+1
   int num_input_files(int which) const { return inputs_[which].size(); }
 
   // Return the ith input file at "level()+which" ("which" must be 0 or 1).
+  // 返回第level_(+1)层输入的第i个文件
   FileMetaData* input(int which, int i) const { return inputs_[which][i]; }
 
   // Maximum size of files to build during this compaction.
+  // 本次压缩输出文件的大小上限
   uint64_t MaxOutputFileSize() const { return max_output_file_size_; }
 
   // Is this a trivial compaction that can be implemented by just
   // moving a single input file to the next level (no merging or splitting)
+  // 判断本次Compaction是否不需要压缩
+  // 而是仅仅将一个SST移到下一层
   bool IsTrivialMove() const;
 
   // Add all inputs to this compaction as delete operations to *edit.
+  // 要所有input的文件添加到edit的deleted_files_中
   void AddInputDeletions(VersionEdit* edit);
 
   // Returns true if the information we have available guarantees that
   // the compaction is producing data in "level+1" for which no data exists
   // in levels greater than "level+1".
+  // 判断是否为user_key的`base level`
+  // 即user_key有无在>=level_+2中出现
+  // 若有，返回false，若无，返回true
   bool IsBaseLevelForKey(const Slice& user_key);
 
   // Returns true iff we should stop building the current output
   // before processing "internal_key".
+  // 为了避免合并到level_+1后，level_+1和level_+2的重叠度过高
+  // 因此需要及时停止输出
   bool ShouldStopBefore(const Slice& internal_key);
 
   // Release the input version for the compaction, once the compaction
   // is successful.
+  // Compaction完成，对当前Version进行解引用
+  // （一个旧的Version引用数为0时，就会被删除）
   void ReleaseInputs();
 
  private:
@@ -387,17 +411,28 @@ class Compaction {
 
   Compaction(const Options* options, int level);
 
+  // 正在被压缩的level
+  // 记录level，那么level+1自然就知道了，因此只需记录一层
   int level_;
+  // 压缩后生成的SST大小上限
   uint64_t max_output_file_size_;
+  // 当前所在的Version
   Version* input_version_;
+  // 一个Compaction要对应一个VersinoEdit
   VersionEdit edit_;
 
   // Each compaction reads inputs from "level_" and "level_+1"
+  // 参与压缩的文件
+  // inputs_[1]为Li层，inputs_[2]为Li+1层
   std::vector<FileMetaData*> inputs_[2];  // The two sets of inputs
 
   // State used to check for number of overlapping grandparent files
   // (parent == level_ + 1, grandparent == level_ + 2)
+  // 下面4个字段用来记录重叠
+
+  // level_+2中和level_中重叠的文件
   std::vector<FileMetaData*> grandparents_;
+  // grandparents_中第一个文件的编号
   size_t grandparent_index_;  // Index in grandparent_starts_
   bool seen_key_;             // Some output key has been seen
   int64_t overlapped_bytes_;  // Bytes of overlap between current output
