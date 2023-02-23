@@ -53,6 +53,8 @@ struct DBImpl::Writer {
 
 struct DBImpl::CompactionState {
   // Files produced by compaction
+  // 记录Compaction输出的某一个SST信息
+  // 输出SST编号、文件大小、最大/最小key
   struct Output {
     uint64_t number;
     uint64_t file_size;
@@ -74,14 +76,19 @@ struct DBImpl::CompactionState {
   // will never have to service a snapshot below smallest_snapshot.
   // Therefore if we have seen a sequence number S <= smallest_snapshot,
   // we can drop all entries for the same key with sequence numbers < S.
+  // 记录最小的seq_num，小于其的都可被删除了
   SequenceNumber smallest_snapshot;
 
+  // Compaction输出的全部SST
   std::vector<Output> outputs;
 
   // State kept for output being generated
+  // SST
   WritableFile* outfile;
+  // SST builder
   TableBuilder* builder;
 
+  // 总输出大小
   uint64_t total_bytes;
 };
 
@@ -626,6 +633,8 @@ Status DBImpl::WriteLevel0Table(MemTable* mem, VersionEdit* edit,
     if (base != nullptr) {
       // 从当前Version中选出存放该SST的Level
       // 一般来说是0，当然也可能不是
+      // LevelDb的思想：
+      // 尽可能放在2层，因为level0层经常被访问，内部又允许重叠，如果文件过多，会放大读。
       level = base->PickLevelForMemTableOutput(min_user_key, max_user_key);
     }
     // 新的SST加入new_files_中
@@ -704,9 +713,14 @@ void DBImpl::CompactMemTable() {
 }
 // 了解完CompactMemTable()的实现之后
 // 解答如下问题：
-// 1.CompactMemTable()何时调用？
+// 1.CompactMemTable()何时调用？ 
 // 2.由谁调用？
 // 3.单线程串行调用还是多线程并行调用？
+// 答：
+// 1. imm_满时调用
+// 2.往前回溯，由MakeRoomForWrite逐步调用
+// 3.单线程，LevelDB的后台线程只有一个，不管是Flush还是Compaction
+
 
 void DBImpl::CompactRange(const Slice* begin, const Slice* end) {
   int max_level_with_files = 1;
@@ -788,19 +802,30 @@ void DBImpl::RecordBackgroundError(const Status& s) {
   }
 }
 
+// 可能要进行Compaction
 void DBImpl::MaybeScheduleCompaction() {
   mutex_.AssertHeld();
   if (background_compaction_scheduled_) {
+    // 压缩线程已经在执行了
     // Already scheduled
   } else if (shutting_down_.load(std::memory_order_acquire)) {
+    // db正在被关闭
     // DB is being deleted; no more background compactions
   } else if (!bg_error_.ok()) {
     // Already got an error; no more changes
   } else if (imm_ == nullptr && manual_compaction_ == nullptr &&
              !versions_->NeedsCompaction()) {
+    // imm_为空，且LSM-Tree不需要Compaction
     // No work to be done
   } else {
+    // 三种可能情况：
+    // 1.imm_不为空，需要Flush
+    // 2.manual_compaction_不为空，需要手动开启压缩
+    // 3.LSM-Tree需要压缩
+
+    // 调度Compaction
     background_compaction_scheduled_ = true;
+    // Schedule()就是另起一个线程去执行传入函数
     env_->Schedule(&DBImpl::BGWork, this);
   }
 }
@@ -809,7 +834,10 @@ void DBImpl::BGWork(void* db) {
   reinterpret_cast<DBImpl*>(db)->BackgroundCall();
 }
 
+// 调度后台Compaction
+// 此时已经是一个新的线程了
 void DBImpl::BackgroundCall() {
+  // 锁
   MutexLock l(&mutex_);
   assert(background_compaction_scheduled_);
   if (shutting_down_.load(std::memory_order_acquire)) {
@@ -817,13 +845,18 @@ void DBImpl::BackgroundCall() {
   } else if (!bg_error_.ok()) {
     // No more background work after a background error.
   } else {
+    // 执行Compaction
+    // 因为此时已经在新线程了，所以BackgroundCompaction()是个串行执行
     BackgroundCompaction();
   }
 
+  // Compaction完毕
   background_compaction_scheduled_ = false;
 
   // Previous compaction may have produced too many files in a level,
   // so reschedule another compaction if needed.
+  // 重新判断是否需要Compaction
+  // 因为前一个Compaction如果过大的话可能产生太多新的SST导致需要另一次Compaction
   MaybeScheduleCompaction();
   background_work_finished_signal_.SignalAll();
 }
@@ -831,6 +864,8 @@ void DBImpl::BackgroundCall() {
 void DBImpl::BackgroundCompaction() {
   mutex_.AssertHeld();
 
+  // imm_不为空的话，则执行Flush
+  // 执行完后返回即可
   if (imm_ != nullptr) {
     CompactMemTable();
     return;
@@ -1451,6 +1486,23 @@ WriteBatch* DBImpl::BuildBatchGroup(Writer** last_writer) {
 
 // REQUIRES: mutex_ is held
 // REQUIRES: this thread is currently at the front of the writer queue
+// 字面意思，为Write腾出空间
+// 也就是看情况是否新建memtable
+// - 不需要，则直接退出
+// - 需要，则新建memtable
+// 函数流程如下：
+// 1.如果允许delay，而且L0的文件个数没有超过kL0_SlowdownWritesTrigger，
+//   那么就等1s重来，但是只能等1次
+// 2.如果不允许delay，且memtable有足够的空间，说明不需要新建了，直接退出
+// 3.在第2步为否的基础上（memtable满了），如果imm_不为空，则说明memtable满了
+//   且当前的imm_还没有被Flush掉，此时已经没有空间分配出去了，因为mem和imm各
+//   只能有一个，那么就一直等待，直到Flush完成后唤醒它，然后重新进入循环
+// 4.在前几步为否的基础上（memtable满了，imm_为空），如果l0的文件个数超过
+//   kL0_StopWritesTrigger，就说明l0文件太多了，那么就等待，直到l0被Compaction
+//   了之后在被唤醒
+// 5.在前几步为否的基础上（memtable满了，imm_为空，L0空间足够），将mem_赋值给imm_
+//   然后重建一个新的mem_，即下刷旧的生成新的。随后，调用MaybeScheduleCompaction()
+//   来将imm_给Flush掉
 Status DBImpl::MakeRoomForWrite(bool force) {
   mutex_.AssertHeld();
   assert(!writers_.empty());
@@ -1480,6 +1532,7 @@ Status DBImpl::MakeRoomForWrite(bool force) {
     } else if (imm_ != nullptr) {
       // We have filled up the current memtable, but the previous
       // one is still being compacted, so we wait.
+      // mem_满了，且imm_仍存在，那么就等待直到imm_被Flush
       Log(options_.info_log, "Current memtable full; waiting...\n");
       background_work_finished_signal_.Wait();
     } else if (versions_->NumLevelFiles(0) >= config::kL0_StopWritesTrigger) {
@@ -1487,6 +1540,8 @@ Status DBImpl::MakeRoomForWrite(bool force) {
       Log(options_.info_log, "Too many L0 files; waiting...\n");
       background_work_finished_signal_.Wait();
     } else {
+      // mem_满了，imm_为空
+      // 那就把mem_赋值给imm_，然后重建一个新的mem_
       // Attempt to switch to a new memtable and trigger compaction of old
       assert(versions_->PrevLogNumber() == 0);
       uint64_t new_log_number = versions_->NewFileNumber();
@@ -1507,6 +1562,7 @@ Status DBImpl::MakeRoomForWrite(bool force) {
       mem_ = new MemTable(internal_comparator_);
       mem_->Ref();
       force = false;  // Do not force another compaction if have room
+      // 将imm_给Flush
       MaybeScheduleCompaction();
     }
   }

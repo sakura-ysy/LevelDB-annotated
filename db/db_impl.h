@@ -160,53 +160,72 @@ class DBImpl : public DB {
   const InternalKeyComparator internal_comparator_;
   const InternalFilterPolicy internal_filter_policy_;
   const Options options_;  // options_.comparator == &internal_comparator_
+  // 表示是否启用了info_log打印日志，如果启用了后期需要释放内存
   const bool owns_info_log_;
+  // 表示是否启用了block cache
   const bool owns_cache_;
+  // db名字
   const std::string dbname_;
 
   // table_cache_ provides its own synchronization
+  // table cache用于缓存SST的元数据
   TableCache* const table_cache_;
 
   // Lock over the persistent DB state.  Non-null iff successfully acquired.
+  // 文件锁，保证只有一个进程能够打开db
   FileLock* db_lock_;
 
   // State below is protected by mutex_
   port::Mutex mutex_;
+  // 以下的字段均受mutex_保护
+
+  // db是否关闭了
   std::atomic<bool> shutting_down_;
   port::CondVar background_work_finished_signal_ GUARDED_BY(mutex_);
   // memtable
   MemTable* mem_;
   // im memtable
   // 注意，不同于RocksDB，LevelDB只有一个im memtable
+  // 为什么只有一个呢？
+  // 因为LevelDB的压缩是单线程的
   MemTable* imm_ GUARDED_BY(mutex_);  // Memtable being compacted
   // 是否已有im memtable
   std::atomic<bool> has_imm_;         // So bg thread can detect non-null imm_
+  // WAL文件指针
   WritableFile* logfile_;
+  // 当前WAL的编号
   uint64_t logfile_number_ GUARDED_BY(mutex_);
   log::Writer* log_;
+  // 用于采样
   uint32_t seed_ GUARDED_BY(mutex_);  // For sampling.
 
   // Queue of writers.
+  // 用于批量写
   std::deque<Writer*> writers_ GUARDED_BY(mutex_);
   WriteBatch* tmp_batch_ GUARDED_BY(mutex_);
-
+  
+  // 快照，leveldb支持从某个快照处读数据
   SnapshotList snapshots_ GUARDED_BY(mutex_);
 
   // Set of table files to protect from deletion because they are
   // part of ongoing compactions.
   // 记录正准备生成的SST文件编号
+  // 保护这些文件不在Compaction中被删除
   std::set<uint64_t> pending_outputs_ GUARDED_BY(mutex_);
 
   // Has a background compaction been scheduled or is running?
+  // Compaction后台线程是否已经被调度或在运行
+  // LevelDb是单线程压缩
   bool background_compaction_scheduled_ GUARDED_BY(mutex_);
-
+  // 手动压缩句柄
   ManualCompaction* manual_compaction_ GUARDED_BY(mutex_);
-
+  // VersionSet
   VersionSet* const versions_ GUARDED_BY(mutex_);
 
   // Have we encountered a background error in paranoid mode?
   Status bg_error_ GUARDED_BY(mutex_);
 
+  // 记录每一层的压缩状态
   CompactionStats stats_[config::kNumLevels] GUARDED_BY(mutex_);
 };
 
